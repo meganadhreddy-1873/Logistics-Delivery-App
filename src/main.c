@@ -1,252 +1,239 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <limits.h>
 
-#define MAX 10
+#define MAX 100
+#define INF 9999
 
-// Edge structure
-typedef struct Edge {
+// Structure for adjacency list node
+typedef struct Node {
     int dest;
     int weight;
-    struct Edge* next;
-} Edge;
-
-// Node structure
-typedef struct Node {
-    char name[50];
-    Edge* head;
+    struct Node* next;
 } Node;
 
-Node graph[MAX];
-int nodeCount = 0;
+// Graph structure
+typedef struct Graph {
+    int numVertices;
+    char locations[MAX][50];
+    Node* adjList[MAX];
+} Graph;
 
-// 🔹 Add Node (CREATE)
-void addNode() {
-    if (nodeCount >= MAX) {
-        printf("Maximum nodes reached!\n");
+// Create graph
+Graph* createGraph() {
+    Graph* graph = (Graph*)malloc(sizeof(Graph));
+    graph->numVertices = 0;
+
+    for (int i = 0; i < MAX; i++)
+        graph->adjList[i] = NULL;
+
+    return graph;
+}
+
+// Find index of location
+int getIndex(Graph* graph, char name[]) {
+    for (int i = 0; i < graph->numVertices; i++) {
+        if (strcmp(graph->locations[i], name) == 0)
+            return i;
+    }
+    return -1;
+}
+
+// Add location
+void addLocation(Graph* graph) {
+    char name[50];
+    printf("Enter location name: ");
+    scanf("%s", name);
+
+    if (getIndex(graph, name) != -1) {
+        printf("Location already exists!\n");
         return;
     }
 
-    printf("Enter location name: ");
-    scanf("%s", graph[nodeCount].name);
-    graph[nodeCount].head = NULL;
-
-    printf("Node added with index %d\n", nodeCount);
-    nodeCount++;
+    strcpy(graph->locations[graph->numVertices], name);
+    graph->numVertices++;
+    printf("Location added successfully.\n");
 }
 
-// 🔹 Add Edge (CREATE)
-void addEdge() {
-    int src, dest, weight;
+// Add route
+void addRoute(Graph* graph) {
+    char src[50], dest[50];
+    int weight;
 
-    printf("Enter source index: ");
-    scanf("%d", &src);
-
-    printf("Enter destination index: ");
-    scanf("%d", &dest);
-
+    printf("Enter source: ");
+    scanf("%s", src);
+    printf("Enter destination: ");
+    scanf("%s", dest);
     printf("Enter distance: ");
     scanf("%d", &weight);
 
-    if (src >= nodeCount || dest >= nodeCount) {
-        printf("Invalid indices!\n");
+    int s = getIndex(graph, src);
+    int d = getIndex(graph, dest);
+
+    if (s == -1 || d == -1) {
+        printf("Invalid locations!\n");
         return;
     }
 
-    Edge* newEdge = (Edge*)malloc(sizeof(Edge));
-    newEdge->dest = dest;
-    newEdge->weight = weight;
-    newEdge->next = graph[src].head;
-    graph[src].head = newEdge;
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->dest = d;
+    newNode->weight = weight;
+    newNode->next = graph->adjList[s];
+    graph->adjList[s] = newNode;
 
-    printf("Route added successfully!\n");
+    printf("Route added successfully.\n");
 }
 
-// 🔹 Display Graph (READ)
-void displayGraph() {
-    printf("\nGraph Representation:\n");
-
-    for (int i = 0; i < nodeCount; i++) {
-        printf("%d (%s): ", i, graph[i].name);
-
-        Edge* temp = graph[i].head;
-        while (temp != NULL) {
-            printf(" -> %d (%d)", temp->dest, temp->weight);
+// Display graph
+void displayGraph(Graph* graph) {
+    for (int i = 0; i < graph->numVertices; i++) {
+        printf("%s -> ", graph->locations[i]);
+        Node* temp = graph->adjList[i];
+        while (temp) {
+            printf("%s(%d) ", graph->locations[temp->dest], temp->weight);
             temp = temp->next;
         }
         printf("\n");
     }
 }
 
-// 🔹 Update Edge (UPDATE)
-void updateEdge() {
-    int src, dest, newWeight;
-
-    printf("Enter source and destination: ");
-    scanf("%d %d", &src, &dest);
-
-    Edge* temp = graph[src].head;
-
-    while (temp != NULL) {
-        if (temp->dest == dest) {
-            printf("Enter new distance: ");
-            scanf("%d", &newWeight);
-            temp->weight = newWeight;
-            printf("Updated successfully!\n");
-            return;
-        }
-        temp = temp->next;
-    }
-
-    printf("Edge not found!\n");
-}
-
-// 🔹 Delete Edge (DELETE)
-void deleteEdge() {
-    int src, dest;
-
-    printf("Enter source and destination: ");
-    scanf("%d %d", &src, &dest);
-
-    Edge *temp = graph[src].head, *prev = NULL;
-
-    while (temp != NULL) {
-        if (temp->dest == dest) {
-            if (prev == NULL)
-                graph[src].head = temp->next;
-            else
-                prev->next = temp->next;
-
-            free(temp);
-            printf("Route deleted successfully!\n");
-            return;
-        }
-
-        prev = temp;
-        temp = temp->next;
-    }
-
-    printf("Edge not found!\n");
-}
-
-// 🔹 Search Node
-void searchNode() {
+// Search location
+void searchLocation(Graph* graph) {
     char name[50];
-
     printf("Enter location name: ");
     scanf("%s", name);
 
-    for (int i = 0; i < nodeCount; i++) {
-        if (strcmp(graph[i].name, name) == 0) {
-            printf("Location found at index %d\n", i);
-            return;
-        }
-    }
-
-    printf("Location not found!\n");
+    if (getIndex(graph, name) != -1)
+        printf("Location found.\n");
+    else
+        printf("Location not found.\n");
 }
 
-// 🔹 Dijkstra Algorithm (Shortest Path)
-void dijkstra(int start) {
+// Update route
+void updateRoute(Graph* graph) {
+    char src[50], dest[50];
+    int newWeight;
+
+    printf("Enter source: ");
+    scanf("%s", src);
+    printf("Enter destination: ");
+    scanf("%s", dest);
+    printf("Enter new distance: ");
+    scanf("%d", &newWeight);
+
+    int s = getIndex(graph, src);
+    int d = getIndex(graph, dest);
+
+    Node* temp = graph->adjList[s];
+    while (temp) {
+        if (temp->dest == d) {
+            temp->weight = newWeight;
+            printf("Route updated successfully.\n");
+            return;
+        }
+        temp = temp->next;
+    }
+    printf("Route not found.\n");
+}
+
+// Delete route
+void deleteRoute(Graph* graph) {
+    char src[50], dest[50];
+
+    printf("Enter source: ");
+    scanf("%s", src);
+    printf("Enter destination: ");
+    scanf("%s", dest);
+
+    int s = getIndex(graph, src);
+    int d = getIndex(graph, dest);
+
+    Node* temp = graph->adjList[s];
+    Node* prev = NULL;
+
+    while (temp) {
+        if (temp->dest == d) {
+            if (prev)
+                prev->next = temp->next;
+            else
+                graph->adjList[s] = temp->next;
+
+            free(temp);
+            printf("Route deleted successfully.\n");
+            return;
+        }
+        prev = temp;
+        temp = temp->next;
+    }
+    printf("Route not found.\n");
+}
+
+// Dijkstra
+void shortestPath(Graph* graph) {
+    char src[50], dest[50];
+    printf("Enter source: ");
+    scanf("%s", src);
+    printf("Enter destination: ");
+    scanf("%s", dest);
+
+    int s = getIndex(graph, src);
+    int d = getIndex(graph, dest);
+
     int dist[MAX], visited[MAX];
 
-    for (int i = 0; i < nodeCount; i++) {
-        dist[i] = INT_MAX;
+    for (int i = 0; i < graph->numVertices; i++) {
+        dist[i] = INF;
         visited[i] = 0;
     }
 
-    dist[start] = 0;
+    dist[s] = 0;
 
-    for (int i = 0; i < nodeCount - 1; i++) {
-        int min = INT_MAX, u = -1;
+    for (int i = 0; i < graph->numVertices; i++) {
+        int min = INF, u;
 
-        for (int j = 0; j < nodeCount; j++) {
+        for (int j = 0; j < graph->numVertices; j++) {
             if (!visited[j] && dist[j] < min) {
                 min = dist[j];
                 u = j;
             }
         }
 
-        if (u == -1) break;
-
         visited[u] = 1;
 
-        Edge* temp = graph[u].head;
-
-        while (temp != NULL) {
-            int v = temp->dest;
-
-            if (!visited[v] && dist[u] + temp->weight < dist[v]) {
-                dist[v] = dist[u] + temp->weight;
-            }
-
+        Node* temp = graph->adjList[u];
+        while (temp) {
+            if (dist[u] + temp->weight < dist[temp->dest])
+                dist[temp->dest] = dist[u] + temp->weight;
             temp = temp->next;
         }
     }
 
-    printf("\nShortest distances from node %d:\n", start);
-    for (int i = 0; i < nodeCount; i++) {
-        printf("To %d (%s): %d\n", i, graph[i].name, dist[i]);
-    }
+    printf("Shortest distance: %d\n", dist[d]);
 }
 
-// 🔹 Main Function (Menu Driven)
+// MAIN
 int main() {
+    Graph* graph = createGraph();
     int choice;
 
-    do {
-        printf("\n--- Logistics Route Optimization ---\n");
-        printf("1. Add Location\n");
-        printf("2. Add Route\n");
-        printf("3. Display Graph\n");
-        printf("4. Update Route\n");
-        printf("5. Delete Route\n");
-        printf("6. Search Location\n");
-        printf("7. Find Shortest Path\n");
-        printf("8. Exit\n");
+    while (1) {
+        printf("\n1. Add Location\n2. Add Route\n3. Display Graph\n");
+        printf("4. Update Route\n5. Delete Route\n6. Search Location\n");
+        printf("7. Find Shortest Path\n8. Exit\n");
 
         printf("Enter your choice: ");
         scanf("%d", &choice);
 
-        switch(choice) {
-            case 1:
-                addNode();
-                break;
-            case 2:
-                addEdge();
-                break;
-            case 3:
-                displayGraph();
-                break;
-            case 4:
-                updateEdge();
-                break;
-            case 5:
-                deleteEdge();
-                break;
-            case 6:
-                searchNode();
-                break;
-            case 7: {
-                int start;
-                printf("Enter starting node index: ");
-                scanf("%d", &start);
-
-                if (start < nodeCount)
-                    dijkstra(start);
-                else
-                    printf("Invalid index!\n");
-                break;
-            }
-            case 8:
-                printf("Exiting...\n");
-                break;
-            default:
-                printf("Invalid choice!\n");
+        switch (choice) {
+            case 1: addLocation(graph); break;
+            case 2: addRoute(graph); break;
+            case 3: displayGraph(graph); break;
+            case 4: updateRoute(graph); break;
+            case 5: deleteRoute(graph); break;
+            case 6: searchLocation(graph); break;
+            case 7: shortestPath(graph); break;
+            case 8: exit(0);
+            default: printf("Invalid choice!\n");
         }
-
-    } while(choice != 8);
-
-    return 0;
+    }
 }
