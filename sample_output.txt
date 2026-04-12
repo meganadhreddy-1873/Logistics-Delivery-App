@@ -1,0 +1,78 @@
+===== Logistics Delivery Route Optimization =====
+
+1. Add Location
+2. Add Route
+3. Display Graph
+4. Update Route
+5. Delete Route
+6. Search Location
+7. Find Shortest Path
+8. Exit
+
+Enter your choice: 1
+Enter location name: A
+Location added successfully.
+
+Enter your choice: 1
+Enter location name: B
+Location added successfully.
+
+Enter your choice: 1
+Enter location name: C
+Location added successfully.
+
+Enter your choice: 2
+Enter source: A
+Enter destination: B
+Enter distance: 10
+Route added successfully.
+
+Enter your choice: 2
+Enter source: B
+Enter destination: C
+Enter distance: 5
+Route added successfully.
+
+Enter your choice: 2
+Enter source: A
+Enter destination: C
+Enter distance: 20
+Route added successfully.
+
+Enter your choice: 3
+A -> C(20) B(10)
+B -> C(5)
+C ->
+
+Enter your choice: 6
+Enter location name: A
+Location found.
+
+Enter your choice: 4
+Enter source: A
+Enter destination: B
+Enter new distance: 15
+Route updated successfully.
+
+Enter your choice: 3
+A -> C(20) B(15)
+B -> C(5)
+C ->
+
+Enter your choice: 7
+Enter source: A
+Enter destination: C
+Shortest distance: 20
+
+Enter your choice: 5
+Enter source: B
+Enter destination: C
+Route deleted successfully.
+
+Enter your choice: 3
+A -> C(20) B(15)
+B ->
+C ->
+
+Enter your choice: 8
+Exiting program...
